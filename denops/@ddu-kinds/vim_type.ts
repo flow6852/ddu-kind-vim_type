@@ -1,11 +1,9 @@
-import * as fn from "https://deno.land/x/denops_std@v4.1.3/function/mod.ts";
-import type {
-  Actions,
-  Item,
-} from "https://deno.land/x/ddu_vim@v2.7.0/types.ts";
+import { Denops, fn, vars } from "https://deno.land/x/ddu_vim@v2.7.0/deps.ts";
 import {
-  ActionFlags,
-  BaseKind,
+  Actions,
+  DduItem,
+  Previewer,
+  PreviewContext,BaseKind, ActionFlags 
 } from "https://deno.land/x/ddu_vim@v2.7.0/types.ts";
 
 export interface ActionData {
@@ -18,13 +16,15 @@ type PreviewParams = {
   kind?: string;
 }
 
+type Params = Record<never, never>
+
 export class Kind extends BaseKind<Params> {
   override actions: Actions<Params> = {
     yank: async (args: { denops: Denops; items: DduItem[] }) => {
       for (const item of args.items) {
         const action = item?.action as ActionData;
         const value = action.value;
-await fn.setreg(args.denops, '"', value, "v");
+          await fn.setreg(args.denops, '"', value, "v");
         await fn.setreg(
           args.denops,
           await vars.v.get(args.denops, "register"),
@@ -58,18 +58,18 @@ await fn.setreg(args.denops, '"', value, "v");
       case "value":
         ret = {
           kind: "nofile",
-          contents: showValue(args.item),
+          contents: showValue(action.value),
         };
         break;
       default:
         ret = {
           kind: "nofile",
-          contents: showValue(args.item),
+          contents: showValue(action.value),
         };
         break;
     }
     return await Promise.resolve(ret);
-  };
+  }
 
   override params(): Params {
     return {
@@ -77,7 +77,7 @@ await fn.setreg(args.denops, '"', value, "v");
   }
 }
 
-async function getFromHelp(denops: Denops, word: string): Array<string>{
+async function getFromHelp(denops: Denops, word: string): Promise<Previewer>{
   let ret = {kind: "nofile", context: ["don't exist help file"]}
   const files = (await fn.globpath(denops, await fn.getbufvar(denops, await fn.bufnr(denops, "%"), "&rtp") as Array<string>, "doc/*.txt") as string).split("\n")
   for (const file of files){
@@ -97,6 +97,6 @@ async function getFromHelp(denops: Denops, word: string): Array<string>{
 }
 
 // need parse?
-function showValue(item: Item<ActionData>[]): Array<string>{
-  return [item.action.value] ?? ["undefined"]
+function showValue(value: string): Array<string>{
+  return value.split("\n")
 }
