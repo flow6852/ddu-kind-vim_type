@@ -97,6 +97,8 @@ async function getFromHelp(denops: Denops, word: string): Promise<Previewer>{
 }
 
 // need parse?
-function showValue(value: string): Array<string>{
-  return value.split("\n")
+function showValue(value: string | Array<string>): Array<string>{
+  console.log(typeof value)
+  return Array.isArray(value) ? value : (typeof(value) == "string" ? value.split("\n") : [value])
+  //return [value]
 }
