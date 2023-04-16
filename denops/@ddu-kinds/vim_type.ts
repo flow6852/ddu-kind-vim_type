@@ -3,7 +3,8 @@ import {
   Actions,
   DduItem,
   Previewer,
-  PreviewContext,BaseKind, ActionFlags 
+  PreviewContext,BaseKind, ActionFlags,
+  BufferPreviewer, NoFilePreviewer
 } from "https://deno.land/x/ddu_vim@v2.7.0/types.ts";
 
 export interface ActionData {
@@ -77,28 +78,24 @@ export class Kind extends BaseKind<Params> {
   }
 }
 
-async function getFromHelp(denops: Denops, word: string): Promise<Previewer>{
-  let ret = {kind: "nofile", context: ["don't exist help file"]}
+async function getFromHelp(denops: Denops, word: string): Promise<BufferPreviewer | NoFilePreviewer>{
   const files = (await fn.globpath(denops, await fn.getbufvar(denops, await fn.bufnr(denops, "%"), "&rtp") as Array<string>, "doc/*.txt") as string).split("\n")
   for (const file of files){
     const lines = (await Deno.readTextFile(file)).split("\n")
     for(let i = 0; i < lines.length; i++){
       if(lines[i].indexOf("\*" + word + "\*") > -1){
-        ret = {
+        return {
           kind: "buffer",
           path: file,
           lineNr: i
-        }
-        break
+        };
       }
     }
   }
-  return ret
+  return {kind: "nofile", contents: ["don't exist help file"]}
 }
 
 // need parse?
 function showValue(value: string | Array<string>): Array<string>{
-  console.log(typeof value)
   return Array.isArray(value) ? value : (typeof(value) == "string" ? value.split("\n") : [value])
-  //return [value]
 }
