@@ -34,8 +34,14 @@ export class Kind extends BaseKind<Params> {
         );
       }
 
-      return ActionFlags.Persist;
+      return ActionFlags.None;
     },
+    setcmdline: async (args: { denops:Denops;items: DduItem[]}) => {
+      for(const item of args.items){
+        await fn.setcmdline(args.denops, item.word)
+      }
+      return ActionFlags.None;
+    }
   };
 
   override async getPreviewer(
