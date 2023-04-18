@@ -83,7 +83,7 @@ export class Kind extends BaseKind<Params> {
 
   override params(): Params {
     return {
-      getcmdline: "echo "
+      getcmdline: ""
     };
   }
 }
