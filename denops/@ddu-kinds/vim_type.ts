@@ -4,7 +4,8 @@ import {
   DduItem,
   Previewer,
   PreviewContext,BaseKind, ActionFlags,
-  BufferPreviewer, NoFilePreviewer
+  BufferPreviewer, NoFilePreviewer,
+  DduOptions
 } from "https://deno.land/x/ddu_vim@v2.7.0/types.ts";
 
 export interface ActionData {
@@ -17,7 +18,9 @@ type PreviewParams = {
   kind?: string;
 }
 
-type Params = Record<never, never>
+type Params = {
+  getcmdline: string;
+}
 
 export class Kind extends BaseKind<Params> {
   override actions: Actions<Params> = {
@@ -36,9 +39,9 @@ export class Kind extends BaseKind<Params> {
 
       return ActionFlags.None;
     },
-    setcmdline: async (args: { denops:Denops;items: DduItem[]}) => {
+    setcmdline: async (args: { denops:Denops; items: DduItem[], options: DduOptions}) => {
       for(const item of args.items){
-        await fn.setcmdline(args.denops, item.word)
+        await fn.feedkeys(args.denops, ":" + (args.options.actionParams).getcmdline + item.word)
       }
       return ActionFlags.None;
     }
@@ -80,6 +83,7 @@ export class Kind extends BaseKind<Params> {
 
   override params(): Params {
     return {
+      getcmdline: "echo "
     };
   }
 }
