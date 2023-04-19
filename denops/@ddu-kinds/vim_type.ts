@@ -1,11 +1,14 @@
 import { Denops, fn, vars } from "https://deno.land/x/ddu_vim@v2.7.0/deps.ts";
 import {
+  ActionFlags,
   Actions,
+  BaseKind,
+  BufferPreviewer,
   DduItem,
+  DduOptions,
+  NoFilePreviewer,
+  PreviewContext,
   Previewer,
-  PreviewContext,BaseKind, ActionFlags,
-  BufferPreviewer, NoFilePreviewer,
-  DduOptions
 } from "https://deno.land/x/ddu_vim@v2.7.0/types.ts";
 
 export interface ActionData {
@@ -16,11 +19,11 @@ export interface ActionData {
 
 type PreviewParams = {
   kind?: string;
-}
+};
 
 type Params = {
   getcmdline: string;
-}
+};
 
 export class Kind extends BaseKind<Params> {
   override actions: Actions<Params> = {
@@ -28,7 +31,7 @@ export class Kind extends BaseKind<Params> {
       for (const item of args.items) {
         const action = item?.action as ActionData;
         const value = action.value;
-          await fn.setreg(args.denops, '"', value, "v");
+        await fn.setreg(args.denops, '"', value, "v");
         await fn.setreg(
           args.denops,
           await vars.v.get(args.denops, "register"),
@@ -39,12 +42,17 @@ export class Kind extends BaseKind<Params> {
 
       return ActionFlags.None;
     },
-    setcmdline: async (args: { denops:Denops; items: DduItem[], options: DduOptions}) => {
-      for(const item of args.items){
-        await fn.feedkeys(args.denops, ":" + (args.options.actionParams).getcmdline + item.word)
+    setcmdline: async (
+      args: { denops: Denops; items: DduItem[]; options: DduOptions },
+    ) => {
+      for (const item of args.items) {
+        await fn.feedkeys(
+          args.denops,
+          ":" + (args.options.actionParams).getcmdline + item.word,
+        );
       }
       return ActionFlags.None;
-    }
+    },
   };
 
   override async getPreviewer(
@@ -63,7 +71,7 @@ export class Kind extends BaseKind<Params> {
     let ret: Previewer;
     switch (params.kind) {
       case "help":
-        ret =  await getFromHelp(args.denops, args.item.word)
+        ret = await getFromHelp(args.denops, args.item.word);
         break;
       case "value":
         ret = {
@@ -83,29 +91,40 @@ export class Kind extends BaseKind<Params> {
 
   override params(): Params {
     return {
-      getcmdline: ""
+      getcmdline: "",
     };
   }
 }
 
-async function getFromHelp(denops: Denops, word: string): Promise<BufferPreviewer | NoFilePreviewer>{
-  const files = (await fn.globpath(denops, await fn.getbufvar(denops, await fn.bufnr(denops, "%"), "&rtp") as Array<string>, "doc/*.txt") as string).split("\n")
-  for (const file of files){
-    const lines = (await Deno.readTextFile(file)).split("\n")
-    for(let i = 0; i < lines.length; i++){
-      if(lines[i].indexOf("\*" + word + "\*") > -1){
+async function getFromHelp(
+  denops: Denops,
+  word: string,
+): Promise<BufferPreviewer | NoFilePreviewer> {
+  const files = (await fn.globpath(
+    denops,
+    await fn.getbufvar(denops, await fn.bufnr(denops, "%"), "&rtp") as Array<
+      string
+    >,
+    "doc/*.txt",
+  ) as string).split("\n");
+  for (const file of files) {
+    const lines = (await Deno.readTextFile(file)).split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].indexOf("\*" + word + "\*") > -1) {
         return {
           kind: "buffer",
           path: file,
-          lineNr: i
+          lineNr: i,
         };
       }
     }
   }
-  return {kind: "nofile", contents: ["don't exist help file"]}
+  return { kind: "nofile", contents: ["don't exist help file"] };
 }
 
 // need parse?
-function showValue(value: string | Array<string>): Array<string>{
-  return Array.isArray(value) ? value : (typeof(value) == "string" ? value.split("\n") : [value])
+function showValue(value: string | Array<string>): Array<string> {
+  return Array.isArray(value)
+    ? value
+    : (typeof (value) == "string" ? value.split("\n") : [value]);
 }
