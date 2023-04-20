@@ -3,10 +3,8 @@ import {
   ActionFlags,
   Actions,
   BaseKind,
-  BufferPreviewer,
   DduItem,
   DduOptions,
-  NoFilePreviewer,
   PreviewContext,
   Previewer,
 } from "https://deno.land/x/ddu_vim@v2.7.0/types.ts";
@@ -16,10 +14,6 @@ export interface ActionData {
   type: string;
   scope?: string;
 }
-
-type PreviewParams = {
-  kind?: string;
-};
 
 type SetcmdlineActionParams = {
   getcmdline: string;
@@ -79,30 +73,15 @@ export class Kind extends BaseKind<Params> {
       previewContext: PreviewContext;
     },
   ): Promise<Previewer | undefined> {
-    const params = args.actionParams as PreviewParams;
     const action = args.item.action as ActionData;
     if (!action) {
       return await Promise.resolve(undefined);
     }
-    let ret: Previewer;
-    switch (params.kind) {
-      case "help":
-        ret = await getFromHelp(args.denops, args.item.word);
-        break;
-      case "value":
-        ret = {
-          kind: "nofile",
-          contents: showValue(action.value),
-        };
-        break;
-      default:
-        ret = {
-          kind: "nofile",
-          contents: showValue(action.value),
-        };
-        break;
-    }
-    return await Promise.resolve(ret);
+
+    return await Promise.resolve({
+      kind: "nofile",
+      contents: showValue(action.value),
+    });
   }
 
   override params(): Params {
@@ -111,32 +90,6 @@ export class Kind extends BaseKind<Params> {
       getcmdpos: 0,
     };
   }
-}
-
-async function getFromHelp(
-  denops: Denops,
-  word: string,
-): Promise<BufferPreviewer | NoFilePreviewer> {
-  const files = (await fn.globpath(
-    denops,
-    await fn.getbufvar(denops, await fn.bufnr(denops, "%"), "&rtp") as Array<
-      string
-    >,
-    "doc/*.txt",
-  ) as string).split("\n");
-  for (const file of files) {
-    const lines = (await Deno.readTextFile(file)).split("\n");
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].indexOf("\*" + word + "\*") > -1) {
-        return {
-          kind: "buffer",
-          path: file,
-          lineNr: i,
-        };
-      }
-    }
-  }
-  return { kind: "nofile", contents: ["don't exist help file"] };
 }
 
 // need parse?
