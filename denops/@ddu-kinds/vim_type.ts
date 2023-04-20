@@ -21,9 +21,12 @@ type PreviewParams = {
   kind?: string;
 };
 
-type Params = {
+type SetcmdlineActionParams = {
   getcmdline: string;
+  getcmdpos: number;
 };
+
+type Params = Record<never, never>;
 
 export class Kind extends BaseKind<Params> {
   override actions: Actions<Params> = {
@@ -38,17 +41,30 @@ export class Kind extends BaseKind<Params> {
           value,
           "v",
         );
+        console.log(value);
       }
-
       return ActionFlags.None;
     },
     setcmdline: async (
       args: { denops: Denops; items: DduItem[]; options: DduOptions },
     ) => {
+      const actionParams: Partial<SetcmdlineActionParams> =
+        args.options.actionParams;
+      const getcmdline: string = actionParams.getcmdline ?? "";
+      const getcmdpos: number = actionParams.getcmdpos ?? 1;
       for (const item of args.items) {
+        const words: string = getcmdline.slice(
+          0,
+          getcmdpos - 1,
+        ) + item.word +
+          getcmdline.slice(
+            getcmdpos - 1,
+            getcmdline.length,
+          );
+        console.log(words);
         await fn.feedkeys(
           args.denops,
-          ":" + (args.options.actionParams).getcmdline + item.word,
+          ":" + words,
         );
       }
       return ActionFlags.None;
@@ -92,6 +108,7 @@ export class Kind extends BaseKind<Params> {
   override params(): Params {
     return {
       getcmdline: "",
+      getcmdpos: 0,
     };
   }
 }
