@@ -9,8 +9,7 @@ Introduction		|ddu-kind-vim_type-introduction|
 Install			|ddu-kind-vim_type-install|
 Examples		|ddu-kind-vim_type-examples|
 Actions			|ddu-kind-vim_type-actions|
-Preview params		|ddu-kind-vim_type-preview-params|
-Params			|ddu-kind-vim_type-params|
+ActionParams		|ddu-kind-vim_type-actionparams|
 
 
 ==============================================================================
@@ -32,20 +31,54 @@ https://github.com/vim-denops/denops.vim
 EXAMPLES				*ddu-kind-vim_type-examples*
 
 >
-	cmap <silent> <C-h> <Cmd>call DduKindVim_typeSetcmdline()<CR>
 
-	function DduKindVim_typeSetcmdline()
-	    let getcmdline = getcmdline()
-	    call feedkeys("\<Esc>", 't')
-	    call ddu#start({'name': 'vim_variable', 'sources': [
-	        \ {'name': 'vim_variable', 'params': {'bufnr': bufnr('%')}},
-	        \ {'name': 'vim_option', 'params': {'bufnr': bufnr('%')}},
-	        \ {'name': 'vim_function', 'params': {'bufnr': bufnr('%')}},
-	        \ {'name': 'vim_command', 'params': {'bufnr': bufnr('%')}},
-	        \ {'name': 'vim_event', 'params': {'bufnr': bufnr('%')}}],
-	        \ 'actionParams': {'getcmdline': getcmdline}})
-	endfunction
-<
+    cmap <silent> <C-h> <Cmd>call DduKindVim_typeSetcmdline()<CR>
+
+    function DduKindVim_typeSetcmdline()
+        let getcmdline = getcmdline()
+        call feedkeys("\<Esc>", 't')
+        call ddu#start({'name': 'vim_variable', 'sources': [
+            \ {'name': 'vim_variable', 'params': {'bufnr': bufnr('%')}},
+            \ {'name': 'vim_option', 'params': {'bufnr': bufnr('%')}},
+            \ {'name': 'vim_function', 'params': {'bufnr': bufnr('%')}},
+            \ {'name': 'vim_command', 'params': {'bufnr': bufnr('%')}},
+            \ {'name': 'vim_event', 'params': {'bufnr': bufnr('%')}}],
+            \ 'actionParams': {'getcmdline': getcmdline}})
+    endfunction
+
+    " keymapping
+    augroup DduKeyMap
+      au!
+      autocmd FileType ddu-ff call s:ddu_my_settings()
+    augroup End
+    
+    function! s:ddu_my_settings() abort
+      " file
+      nnoremap <buffer><silent> ;p
+        \ <Cmd>call ddu#ui#do_action('preview')<CR>
+    
+      nnoremap <buffer><silent> ;h
+        \ <Cmd>call DduHelpChain('help')<CR>
+    
+      nnoremap <buffer><silent> <Esc>
+        \ <Cmd>call ddu#ui#do_action('quit')<CR>
+    
+      nnoremap <buffer><silent> ;y
+        \ <Cmd>call ddu#ui#do_action('itemAction', {'name': 'yank'})<CR>
+    
+      nnoremap <buffer><silent> <C-c>
+        \ <Cmd>call ddu#ui#do_action('itemAction', {'name': 'setcmdline'})<CR>
+    endfunction
+
+    function! DduHelpChain(arg)
+        let item = ddu#ui#get_item()
+        call ddu#ui#do_action('quit')
+        call ddu#start({'name': a:arg, 'input': get(item, 'word')})
+    endfunction
+
+    call ddu#custom#patch_local('help', {'ui': 'ff', 'sourceOptions': {'_': {'matchers': ['matcher_substring']}} 'sources': [{'name': 'help'}]}))
+
+
 >
 ==============================================================================
 ACTIONS					*ddu-kind-vim_type-actions*
@@ -61,12 +94,6 @@ setcmdline
 
 ==============================================================================
 
-PREVIEW PARAMS				*ddu-kind-vim_type-preview-params*
-
-kind 					*ddu-kind-vim_type-preview_param-kind*	
-		Note: Plan to delete.
-
-==============================================================================
 ACTION PARAMS				*ddu-kind-vim_type-actionparams*
 
 				        *ddu-kind-vim_type-actionparam-getcmdline*
