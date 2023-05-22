@@ -40,14 +40,15 @@ export class Kind extends BaseKind<Params> {
       return ActionFlags.None;
     },
     setcmdline: async (
-      args: { denops: Denops; items: DduItem[]; options: DduOptions },) => {
+      args: { denops: Denops; items: DduItem[]; options: DduOptions },
+    ) => {
       const actionParams: Partial<SetcmdlineActionParams> =
         args.options.actionParams;
       const getcmdline: string = actionParams.getcmdline ?? "";
       const getcmdpos: number = actionParams.getcmdpos ?? 1;
       for (const item of args.items) {
-        const action = item.action as ActionData;
-        let words: string = getcmdline.slice(
+        const action: ActionData = item.action as ActionData;
+        const words: string = getcmdline.slice(
           0,
           getcmdpos - 1,
         ) + item.word +
@@ -55,11 +56,17 @@ export class Kind extends BaseKind<Params> {
             getcmdpos - 1,
             getcmdline.length,
           );
-        if (action.type == "function") words = words.slice(0, words.length-1);
-        await fn.feedkeys(
-          args.denops,
-          ":" + words,
-        );
+        if (action.type == "function") {
+          await args.denops.call(
+            "ddu#kind#vim_type#_feedkeysWithLeft",
+            ":" + words,
+          );
+        } else {
+          await fn.feedkeys(
+            args.denops,
+            ":" + words,
+          );
+        }
       }
       return ActionFlags.None;
     },
