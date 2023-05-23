@@ -56,17 +56,12 @@ export class Kind extends BaseKind<Params> {
             getcmdpos - 1,
             getcmdline.length,
           );
-        if (action.type == "function") {
-          await args.denops.call(
-            "ddu#kind#vim_type#_feedkeysWithLeft",
-            ":" + words,
-          );
-        } else {
-          await fn.feedkeys(
-            args.denops,
-            ":" + words,
-          );
-        }
+        const pos = action.type == "function" ? -1 : 0;
+        await args.denops.call(
+          "ddu#kind#vim_type#_feedkeysWithLeft",
+          ":" + words,
+          pos,
+        );
       }
       return ActionFlags.None;
     },
