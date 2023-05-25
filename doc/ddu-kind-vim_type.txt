@@ -29,68 +29,92 @@ https://github.com/vim-denops/denops.vim
 
 ==============================================================================
 EXAMPLES				*ddu-kind-vim_type-examples*
-
 >
+    call ddu#custom#patch_local('vim_type', {'ui': 'ff', 
+	    \ 'sources': [
+		\ {'name': 'vim_variable', 'params': {'bufnr': bufnr('%')}},
+            	\ {'name': 'vim_option', 'params': {'bufnr': bufnr('%')}},
+            	\ {'name': 'vim_function', 'params': {'bufnr': bufnr('%')}},
+            	\ {'name': 'vim_command', 'params': {'bufnr': bufnr('%')}},
+            	\ {'name': 'vim_event', 'params': {'bufnr': bufnr('%')}}]})
 
+    nmap <silent> ;h <Cmd> call ddu#start({'name': 'vim_type'})<CR>
     cmap <silent> <C-h> <Cmd>call DduKindVim_typeSetcmdline()<CR>
 
+    " for in commandline
     function DduKindVim_typeSetcmdline()
         let getcmdline = getcmdline()
+	let getcmdpos = getcmdpos()
         call feedkeys("\<Esc>", 't')
-        call ddu#start({'name': 'vim_variable', 'sources': [
-            \ {'name': 'vim_variable', 'params': {'bufnr': bufnr('%')}},
-            \ {'name': 'vim_option', 'params': {'bufnr': bufnr('%')}},
-            \ {'name': 'vim_function', 'params': {'bufnr': bufnr('%')}},
-            \ {'name': 'vim_command', 'params': {'bufnr': bufnr('%')}},
-            \ {'name': 'vim_event', 'params': {'bufnr': bufnr('%')}}],
-            \ 'actionParams': {'getcmdline': getcmdline}})
+        call ddu#start({'name': 'vim_type', 
+            \ 'actionParams': {'getcmdline': getcmdline, 'getcmdpos': getcmdpos}})
     endfunction
 
-    " keymapping
     augroup DduKeyMap
       au!
       autocmd FileType ddu-ff call s:ddu_my_settings()
+      autocmd FileType ddu-ff-filter call s:ddu_filter_my_settings()
     augroup End
     
     function! s:ddu_my_settings() abort
-      " file
-      nnoremap <buffer><silent> ;p
-        \ <Cmd>call ddu#ui#do_action('preview')<CR>
-    
-      nnoremap <buffer><silent> ;h
-        \ <Cmd>call DduHelpChain('help')<CR>
-    
-      nnoremap <buffer><silent> <Esc>
-        \ <Cmd>call ddu#ui#do_action('quit')<CR>
-    
-      nnoremap <buffer><silent> ;y
-        \ <Cmd>call ddu#ui#do_action('itemAction', {'name': 'yank'})<CR>
-    
-      nnoremap <buffer><silent> <C-c>
-        \ <Cmd>call ddu#ui#do_action('itemAction', {'name': 'setcmdline'})<CR>
+	" global 
+	
+	nnoremap <buffer><silent> <Esc>
+	  \ <Cmd>call ddu#ui#do_action('quit')<CR>
+	
+	nnoremap <buffer><silent> p
+	  \ <Cmd>call ddu#ui#do_action('preview')<CR>
+	
+	nnoremap <buffer><silent> v
+	  \ <Cmd>call ddu#ui#do_action('getItem')<CR>
+
+	if b:ddu_ui_name == "vim_type"
+    	  " file
+	    nnoremap <buffer><silent> ;h
+	      \ <Cmd>call DduChain('help')<CR>
+	    
+	    nnoremap <buffer><silent> <C-c>
+	      \ <Cmd>call ddu#ui#do_action('itemAction', {'name': 'setcmdline'})<CR>
+	    
+	    nnoremap <buffer><silent> y
+	      \ <Cmd>call ddu#ui#do_action('itemAction', {'name': 'yank'})<CR>
+	elseif b:ddu_ui_name == "help"
+	      nnoremap <buffer><silent> ;h
+	        \ <Cmd>call DduChain('vim_type')<CR>
+	endif
     endfunction
 
-    function! DduHelpChain(arg)
-        let item = ddu#ui#get_item()
-        call ddu#ui#do_action('quit')
-        call ddu#start({'name': a:arg, 'input': get(item, 'word')})
+    function! s:ddu_filter_my_settings() abort
+      inoremap <buffer> <CR>
+            \ <Esc><Cmd>call ddu#ui#do_action('closeFilterWindow')<CR>
+      inoremap <buffer> <ESC>
+            \ <Esc><Cmd>call ddu#ui#do_action('closeFilterWindow')<CR>
+      nnoremap <buffer> <CR>
+            \ <Cmd>call ddu#ui#do_action('closeFilterWindow')<CR>
+      nnoremap <buffer> <ESC>
+            \ <Cmd>call ddu#ui#do_action('closeFilterWindow')<CR>
     endfunction
 
-    call ddu#custom#patch_local('help', {'ui': 'ff', 'sourceOptions': {'_': {'matchers': ['matcher_substring']}} 'sources': [{'name': 'help'}]}))
+    function! DduChain(arg)
+        let l:item = ddu#ui#get_item()
+        call ddu#ui#sync_action('quit')
+        let l:word = get(l:item, 'word')
+        if get(l:item, '__sourceName') == 'help' && match(l:word, ":") == 0
+            let l:word = l:word[1:len(l:word)]
+        endif
+        call ddu#start({'name': a:arg, 'input': l:word})
+    endfunction
 
-
->
 ==============================================================================
 ACTIONS					*ddu-kind-vim_type-actions*
 
 					*ddu-kind-vim_type-action-yank*
 yank
-		Yank the vim_type.
+		Yank word.
     
 					*ddu-kind-vim_type-actio-getcmdline*
 setcmdline
-		Setcmdline the vim_type.
-		Note: Only Action in cmdline.
+		input word in command line.
 
 ==============================================================================
 
