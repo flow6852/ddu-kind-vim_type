@@ -29,6 +29,16 @@ https://github.com/vim-denops/denops.vim
 
 ==============================================================================
 EXAMPLES				*ddu-kind-vim_type-examples*
+
+using above
+
+https://github.com/Shougo/ddu-ui-ff
+https://github.com/matsui54/ddu-source-help
+https://github.com/flow6852/ddu-source-vim_variable
+https://github.com/flow6852/ddu-source-vim_option
+https://github.com/flow6852/ddu-source-vim_function
+https://github.com/flow6852/ddu-source-vim_command
+https://github.com/flow6852/ddu-source-vim_event
 >
     call ddu#custom#patch_local('vim_type', {'ui': 'ff', 
 	    \ 'sources': [
