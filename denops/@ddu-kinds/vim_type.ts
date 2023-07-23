@@ -1,4 +1,4 @@
-import { Denops, fn, vars } from "https://deno.land/x/ddu_vim@v3.0.0/deps.ts";
+import { Denops, fn, vars } from "https://deno.land/x/ddu_vim@v3.4.3/deps.ts";
 import {
   ActionFlags,
   Actions,
@@ -7,7 +7,7 @@ import {
   DduOptions,
   PreviewContext,
   Previewer,
-} from "https://deno.land/x/ddu_vim@v3.0.0/types.ts";
+} from "https://deno.land/x/ddu_vim@v3.4.3/types.ts";
 
 export interface ActionData {
   value: string;
