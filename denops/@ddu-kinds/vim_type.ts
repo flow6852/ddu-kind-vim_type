@@ -8,12 +8,19 @@ import {
   PreviewContext,
   Previewer,
 } from "https://deno.land/x/ddu_vim@v3.4.3/types.ts";
+import { is, assert } from "https;//deno.land/x/unknownutil@3.2.0/mod.ts";
 
 export interface ActionData {
   value: string;
   type: string;
   scope?: string;
 }
+
+const isActionData = is.ObjectOf({
+    value: is.String,
+    type: is.String,
+    scope: is.String
+});
 
 type SetcmdlineActionParams = {
   getcmdline: string;
@@ -26,7 +33,7 @@ export class Kind extends BaseKind<Params> {
   override actions: Actions<Params> = {
     yank: async (args: { denops: Denops; items: DduItem[] }) => {
       for (const item of args.items) {
-        const action = item?.action as ActionData;
+        const action = assert(item.action, isActionData);
         const value = action.value;
         await fn.setreg(args.denops, '"', value, "v");
         await fn.setreg(
@@ -75,7 +82,7 @@ export class Kind extends BaseKind<Params> {
       previewContext: PreviewContext;
     },
   ): Promise<Previewer | undefined> {
-    const action = args.item.action as ActionData;
+    const action = assert(args.item.action, isActionData);
     if (!action) {
       return await Promise.resolve(undefined);
     }
@@ -100,3 +107,4 @@ function showValue(value: string | Array<string>): Array<string> {
     ? value
     : (typeof (value) == "string" ? value.split("\n") : [value]);
 }
+
