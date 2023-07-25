@@ -8,7 +8,7 @@ import {
   PreviewContext,
   Previewer,
 } from "https://deno.land/x/ddu_vim@v3.4.3/types.ts";
-import { is, assert } from "https://deno.land/x/unknownutil@v3.4.0/mod.ts";
+import { assert, is } from "https://deno.land/x/unknownutil@v3.4.0/mod.ts";
 
 export interface ActionData {
   value: string;
@@ -17,9 +17,8 @@ export interface ActionData {
 }
 
 const isActionData = is.ObjectOf({
-    value: is.String,
-    type: is.String,
-    scope: is.String
+  value: is.String,
+  type: is.String,
 });
 
 type SetcmdlineActionParams = {
@@ -33,7 +32,8 @@ export class Kind extends BaseKind<Params> {
   override actions: Actions<Params> = {
     yank: async (args: { denops: Denops; items: DduItem[] }) => {
       for (const item of args.items) {
-        const action = assert(item.action, isActionData);
+        const action: unknown = item.action;
+        assert(action, isActionData);
         const value = action.value;
         await fn.setreg(args.denops, '"', value, "v");
         await fn.setreg(
@@ -83,7 +83,7 @@ export class Kind extends BaseKind<Params> {
     },
   ): Promise<Previewer | undefined> {
     const action = assert(args.item.action, isActionData);
-    if (!action) {
+    if (!isActionData(action)) {
       return await Promise.resolve(undefined);
     }
 
@@ -107,4 +107,3 @@ function showValue(value: string | Array<string>): Array<string> {
     ? value
     : (typeof (value) == "string" ? value.split("\n") : [value]);
 }
-
