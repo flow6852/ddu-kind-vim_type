@@ -8,7 +8,7 @@ import {
   PreviewContext,
   Previewer,
 } from "https://deno.land/x/ddu_vim@v3.4.3/types.ts";
-import { is, assert } from "https://deno.land/x/unknownutil@3.2.0/mod.ts";
+import { is, assert } from "https://deno.land/x/unknownutil@v3.4.0/mod.ts";
 
 export interface ActionData {
   value: string;
