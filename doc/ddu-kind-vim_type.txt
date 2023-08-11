@@ -121,10 +121,18 @@ ACTIONS					*ddu-kind-vim_type-actions*
 					*ddu-kind-vim_type-action-yank*
 yank
 		Yank word.
-    
+
 					*ddu-kind-vim_type-actio-getcmdline*
 setcmdline
 		input word in command line.
+
+					*ddu-kind-vim_type-action-append*
+append
+		Put the words like |p|.
+
+					*ddu-kind-vim_type-action-insert*
+insert
+		Put the words like |P|.
 
 ==============================================================================
 
