@@ -9,6 +9,11 @@ import {
   Previewer,
 } from "https://deno.land/x/ddu_vim@v3.4.3/types.ts";
 import { assert, is } from "https://deno.land/x/unknownutil@v3.4.0/mod.ts";
+import { batch } from "https://deno.land/x/denops_std@v5.0.1/batch/mod.ts";
+import {
+  getreginfo,
+  setreg,
+} from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
 
 export interface ActionData {
   value: string;
@@ -72,6 +77,18 @@ export class Kind extends BaseKind<Params> {
       }
       return ActionFlags.None;
     },
+    append: async ({ items, denops }) => {
+      for (const item of items) {
+        await put(denops, item.word, true);
+      }
+      return ActionFlags.None;
+    },
+    insert: async ({ items, denops }) => {
+      for (const item of items) {
+        await put(denops, item.word, false);
+      }
+      return ActionFlags.None;
+    },
   };
 
   override async getPreviewer(
@@ -106,4 +123,19 @@ function showValue(value: string | Array<string>): Array<string> {
   return Array.isArray(value)
     ? value
     : (typeof (value) == "string" ? value.split("\n") : [value]);
+}
+
+async function put(denops: Denops, word: string, after: boolean) {
+  await batch(denops, async (denops) => {
+    const oldReg = await getreginfo(denops, '"');
+
+    await setreg(denops, '"', word, "v");
+    try {
+      await denops.cmd(`normal! ""${after ? "p" : "P"}`);
+    } finally {
+      if (oldReg) {
+        await setreg(denops, '"', oldReg);
+      }
+    }
+  });
 }
