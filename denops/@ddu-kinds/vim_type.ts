@@ -1,4 +1,4 @@
-import { Denops, fn, vars } from "https://deno.land/x/ddu_vim@v3.4.3/deps.ts";
+import { Denops, fn, vars } from "https://deno.land/x/ddu_vim@v3.10.1/deps.ts";
 import {
   ActionFlags,
   Actions,
@@ -7,13 +7,13 @@ import {
   DduOptions,
   PreviewContext,
   Previewer,
-} from "https://deno.land/x/ddu_vim@v3.4.3/types.ts";
-import { assert, is } from "https://deno.land/x/unknownutil@v3.4.0/mod.ts";
-import { batch } from "https://deno.land/x/denops_std@v5.0.1/batch/mod.ts";
+} from "https://deno.land/x/ddu_vim@v3.10.1/types.ts";
+import { assert, is } from "https://deno.land/x/unknownutil@v3.14.1/mod.ts";
+import { batch } from "https://deno.land/x/denops_std@v5.3.0/batch/mod.ts";
 import {
   getreginfo,
   setreg,
-} from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
+} from "https://deno.land/x/denops_std@v5.3.0/function/mod.ts";
 
 export interface ActionData {
   value: string;
